@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:koperasi/app/modules/dokumenGudang/views/dokumen_gudang_view.dart';
-import 'package:koperasi/app/modules/nasabah/views/nasabah_view.dart';
 import 'package:koperasi/app/modules/dokemenKantor/views/document_view.dart';
 import 'package:koperasi/app/modules/navigation/controllers/navigation_controller.dart';
 
