@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../helper/loading.dart';
-import '../../login/controllers/login_controller.dart';
 import '../../login/views/login_view.dart';
 import '../../nasabah/controllers/nasabah_controller.dart';
 

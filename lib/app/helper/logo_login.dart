@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class Logo extends StatelessWidget {
   const Logo({super.key});
