@@ -11,7 +11,7 @@ class GlobalBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<NasabahController>(() => NasabahController(), fenix: true);
     Get.lazyPut<DocumentController>(() => DocumentController(), fenix: true);
-    Get.lazyPut<LoginController>(() => LoginController());
+    Get.lazyPut<LoginController>(() => LoginController(), fenix: true);
     Get.lazyPut<DokumenGudangController>(
       () => DokumenGudangController(),
       fenix: true,

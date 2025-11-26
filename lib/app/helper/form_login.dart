@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:koperasi/app/modules/login/controllers/login_controller.dart';
 
 class FormLogin extends StatelessWidget {
-  const FormLogin();
+  const FormLogin({super.key});
 
   @override
   Widget build(BuildContext context) {

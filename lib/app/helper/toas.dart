@@ -11,8 +11,6 @@ class AppToast {
     final ctx = Get.overlayContext ?? Get.context!;
     final overlay = Overlay.of(ctx);
 
-    if (overlay == null) return;
-
     final entry = OverlayEntry(
       builder: (context) {
         return Positioned(

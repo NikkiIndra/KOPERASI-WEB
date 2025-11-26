@@ -16,6 +16,21 @@ class LoginController extends GetxController {
 
   final auth = FirebaseAuth.instance;
 
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
+  }
+
+  // Method untuk reset controller tanpa dispose
+  void resetControllers() {
+    emailController.clear();
+    passwordController.clear();
+    isPasswordVisible.value = false;
+    rememberMe.value = false;
+  }
+
   void togglePassword() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
@@ -29,11 +44,8 @@ class LoginController extends GetxController {
 
     LoadingHelper.show(message: "Checking...");
 
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // rasa halus saat load
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // validasi berdasarkan username dan password
     final username = emailController.text.trim();
     final password = passwordController.text.trim();
 
@@ -54,17 +66,12 @@ class LoginController extends GetxController {
       );
 
       LoadingHelper.hide();
-      Get.toNamed('/navigation');
+      Get.toNamed(
+        '/navigation',
+      ); // Gunakan offAll untuk menghapus halaman login dari stack
     } catch (e) {
       LoadingHelper.hide();
       AppToast.show("Login gagal");
     }
-  }
-
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../helper/loading.dart';
+import '../../login/controllers/login_controller.dart';
 import '../../login/views/login_view.dart';
 import '../../nasabah/controllers/nasabah_controller.dart';
 
@@ -30,6 +31,7 @@ class NavigationController extends GetxController {
     Get.offAll(() => const LoginView());
   }
 
+  // Di NavigationController atau controller yang mengatur logout
   Future<void> confirmLogout() async {
     final result = await Get.dialog<bool>(
       AlertDialog(
@@ -48,9 +50,8 @@ class NavigationController extends GetxController {
       ),
     );
 
-    // Jika user memilih Yes
     if (result == true) {
-      logout();
+      await logout();
     }
   }
 }

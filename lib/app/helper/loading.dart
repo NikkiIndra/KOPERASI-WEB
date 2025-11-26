@@ -32,7 +32,7 @@ class LoadingHelper {
                 if (message != null) ...[
                   const SizedBox(height: 16),
                   Text(
-                    message!,
+                    message,
                     style: const TextStyle(fontSize: 16),
                   ),
                 ]
