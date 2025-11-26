@@ -1,17 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:koperasi/app/modules/dokemenKantor/utils/AddDocument.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:html' as html;
 
+import '../../../helper/import_dokumen.dart';
 
 class DocumentController extends GetxController {
   final search = ''.obs;
 
   final titleC = TextEditingController();
   final yearC = TextEditingController(text: "2025");
-  final rakC = TextEditingController();
+  final blokC = TextEditingController();
+  final ambalanC = TextEditingController();
   final boxC = TextEditingController();
   final descC = TextEditingController();
   final isFormValid = false.obs;
@@ -23,6 +28,151 @@ class DocumentController extends GetxController {
     super.onInit();
     loadDocs();
     search.value = "";
+
+    // ✅ HAPUS fungsi di dalam onInit, ganti dengan:
+    _migrateExistingData();
+  }
+
+  // ✅ BUAT FUNGSI TERPISAH
+  void _migrateExistingData() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection("dokumenKantor")
+          .get();
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        // Only update if type field doesn't exist
+        if (!data.containsKey('type')) {
+          await doc.reference.update({"type": "manual"});
+        }
+      }
+      print('Migration completed');
+    } catch (e) {
+      print('Migration error: $e');
+    }
+  }
+
+  // =====================================================
+  // IMPORT DOKUMEN (UPLOAD FILE) - FIXED VERSION
+  // =====================================================
+  Future<void> importDocument({
+    required String title,
+    required String year,
+    required String blok,
+    required String ambalan,
+    required String box,
+    required html.File file,
+  }) async {
+    try {
+      print('Starting import process...');
+
+      // 1. Upload file ke Firebase Storage
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${timestamp}_${file.name}';
+      final storageRef = FirebaseStorage.instance.ref().child(
+        'dokumenKantor/$fileName',
+      );
+
+      print('Uploading file: $fileName');
+
+      // Convert html.File to Uint8List
+      final reader = html.FileReader();
+      reader.readAsArrayBuffer(file);
+      await reader.onLoad.first;
+      final bytes = reader.result as List<int>;
+      final uploadTask = storageRef.putData(Uint8List.fromList(bytes));
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      print('File uploaded, URL: $downloadUrl');
+
+      // 2. Simpan metadata ke Firestore
+      await FirebaseFirestore.instance.collection("dokumenKantor").add({
+        "name": title,
+        "year": year,
+        "blok": blok,
+        "ambalan": ambalan,
+        "box": box,
+        "type": "imported",
+        "fileUrl": downloadUrl,
+        "fileName": file.name,
+        "fileSize": file.size,
+        "update": DateTime.now().toIso8601String(),
+      });
+
+      print('Firestore document saved');
+      Get.snackbar('Sukses', 'Dokumen berhasil diimport');
+    } catch (e) {
+      print('Import error: $e');
+      Get.snackbar('Error', 'Gagal mengimport dokumen: $e');
+    }
+  }
+
+  // =====================================================
+  // DOWNLOAD DOKUMEN (SMART LOGIC)
+  // =====================================================
+  Future<void> downloadDocument(Map<String, dynamic> data) async {
+    try {
+      final docType = data['type'] ?? 'manual'; // ✅ Default ke manual jika null
+
+      // ✅ DOKUMEN IMPORT: Download file asli dari Storage
+      if (docType == 'imported' && data['fileUrl'] != null) {
+        final url = data['fileUrl'];
+        final fileName = data['fileName'] ?? 'document.pdf';
+
+        // Download file asli
+        html.AnchorElement(href: url)
+          ..download = fileName
+          ..click();
+        return;
+      }
+      // ✅ DOKUMEN MANUAL: Generate PDF dari data input
+      else {
+        await generatePDF(
+          title: data['name'] ?? '',
+          year: data['year'] ?? '',
+          blok: data['blok']?.toString() ?? '',
+          ambalan: data['ambalan']?.toString() ?? '',
+          box: data['box']?.toString() ?? '',
+          desc: data['desc'] ?? '',
+        );
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mendownload: $e');
+    }
+  }
+
+  // =====================================================
+  // BUKA DIALOG IMPORT
+  // =====================================================
+  void openImportDialog() {
+    Get.dialog(ImportDocumentDialog());
+  }
+
+  // ==================== UPDATE NASABAH ====================
+  Future<void> updateDukumenKantor(String id) async {
+    await FirebaseFirestore.instance
+        .collection("dokumenKantor")
+        .doc(id)
+        .update({
+          "name": titleC.text,
+          "year": yearC.text,
+          "blok": blokC.text,
+          "ambalan": ambalanC.text,
+          "box": boxC.text,
+          "type": "manual",
+          "update": DateTime.now().toIso8601String(),
+        });
+  }
+
+  // ==================== CLEAR FORM ====================
+  void clearForm() {
+    titleC.clear();
+    yearC.clear();
+    blokC.clear();
+    ambalanC.clear();
+    boxC.clear();
   }
 
   // =====================================================
@@ -44,6 +194,7 @@ class DocumentController extends GetxController {
         "ambalan": ambalan,
         "box": box,
         "desc": desc,
+        "type": "manual",
         "update": DateTime.now().toIso8601String(),
       });
 
@@ -154,16 +305,30 @@ class DocumentController extends GetxController {
   // =====================================================
   // HAPUS DATA FIRESTORE SAJA
   // =====================================================
+  // =====================================================
+  // HAPUS DATA FIRESTORE + STORAGE (jika imported)
+  // =====================================================
   Future<void> deleteDocument(Map data) async {
     try {
+      // Jika dokumen imported, hapus juga file di storage
+      if (data['type'] == 'imported' && data['fileUrl'] != null) {
+        try {
+          final fileUrl = data['fileUrl'];
+          final ref = FirebaseStorage.instance.refFromURL(fileUrl);
+          await ref.delete();
+        } catch (e) {
+          print('Error deleting storage file: $e');
+        }
+      }
+
       await FirebaseFirestore.instance
           .collection("dokumenKantor")
           .doc(data["id"])
           .delete();
 
-      // AppToast.show("Dokumen dihapus");
+      Get.snackbar('Sukses', 'Dokumen berhasil dihapus');
     } catch (e) {
-      // AppToast.show("Gagal menghapus dokumen");
+      Get.snackbar('Error', 'Gagal menghapus dokumen: $e');
     }
   }
 

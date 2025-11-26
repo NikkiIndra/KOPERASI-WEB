@@ -23,6 +23,21 @@ class DokumenGudangController extends GetxController {
     search.value = "";
   }
 
+  // ==================== UPDATE NASABAH ====================
+  Future<void> updateDokumenGudang(String id) async {
+    await FirebaseFirestore.instance.collection("dokumenGudang").doc(id).update({
+      "name": titleC.text,
+      "year": yearC.text,
+      "bantex": bantexC.text,
+      "update": DateTime.now().toIso8601String(),
+    });
+  }
+  // ==================== CLEAR FORM ====================
+  void clearForm() {
+    titleC.clear();
+    yearC.clear();
+    bantexC.clear();
+  }
   // =====================================================
   // SIMPAN TANPA PDF
   // =====================================================

@@ -47,6 +47,22 @@ class DocumentView extends GetView<DocumentController> {
                     onChanged: (v) => controller.search.value = v,
                   ),
                 ),
+                SizedBox(width: 12),
+                // TOMBOL IMPORT
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: () => controller.openImportDialog(),
+                  icon: Icon(Icons.upload_file, color: Colors.white),
+                  label: Text(
+                    "Import Dokumen",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
 
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
@@ -108,36 +124,50 @@ class DocumentView extends GetView<DocumentController> {
                         DataCell(Text(formatTanggal(data['update']))),
 
                         // LOKASI
-                        DataCell(
-                          Text("${data['blok']}"),
-                        ),
-                        DataCell(
-                          Text("${data['ambalan']}"),
-                        ),
-                        DataCell(
-                          Text("${data['box']}"),
-                        ),
+                        DataCell(Text("${data['blok']}")),
+                        DataCell(Text("${data['ambalan']}")),
+                        DataCell(Text("${data['box']}")),
 
                         // AKSI ICONS
                         DataCell(
                           Row(
                             children: [
-                              // DOWNLOAD: generate PDF ulang
-                              GestureDetector(
-                                onTap: () {
-                                  controller.generatePDF(
-                                    title: data['name'],
-                                    year: data['year'],
-                                    blok: data['blok'],
-                                    ambalan: data['ambalan'],
-                                    box: data['box'],
-                                    desc: data['desc'],
+                              // EDIT
+                              IconButton(
+                                onPressed: () {
+                                  controller.titleC.text = data['name'];
+                                  controller.yearC.text = data['year'];
+                                  controller.blokC.text = data['blok'];
+                                  controller.ambalanC.text = data['ambalan'];
+                                  controller.boxC.text = data['box'];
+                                  controller.descC.text = data['desc'];
+                                  Get.dialog(
+                                    editDokumenKantorDialog(data['id']),
                                   );
                                 },
-                                child: Tooltip(
-                                  message: "Download Dokumen",
+                                icon: Tooltip(
+                                  message: "Edit Dokumen",
                                   child: const Icon(
-                                    CupertinoIcons.arrow_down_doc_fill,
+                                    CupertinoIcons.pencil,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+                              // Ganti tombol download yang lama dengan:
+                              IconButton(
+                                onPressed: () {
+                                  controller.downloadDocument(data);
+                                },
+                                icon: Tooltip(
+                                  message: data['type'] == 'imported'
+                                      ? "Download File Asli"
+                                      : "Generate PDF",
+                                  child: Icon(
+                                    data['type'] == 'imported'
+                                        ? CupertinoIcons.arrow_down_circle_fill
+                                        : CupertinoIcons.arrow_down_doc_fill,
                                     size: 20,
                                   ),
                                 ),
@@ -146,8 +176,8 @@ class DocumentView extends GetView<DocumentController> {
                               const SizedBox(width: 14),
 
                               // DELETE firestore
-                              GestureDetector(
-                                onTap: () {
+                              IconButton(
+                                onPressed: () {
                                   Get.defaultDialog(
                                     title: "Hapus?",
                                     middleText:
@@ -160,7 +190,7 @@ class DocumentView extends GetView<DocumentController> {
                                     },
                                   );
                                 },
-                                child: Tooltip(
+                                icon: Tooltip(
                                   message: "Hapus Dokumen",
                                   child: const Icon(
                                     CupertinoIcons.delete,
@@ -181,6 +211,61 @@ class DocumentView extends GetView<DocumentController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget editDokumenKantorDialog(String id) {
+    return AlertDialog(
+      title: const Text("Edit Dokumen kantor"),
+      content: SizedBox(
+        width: 450,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller.titleC,
+              decoration: const InputDecoration(labelText: "Judul Dokumen"),
+            ),
+            TextField(
+              controller: controller.yearC,
+              decoration: const InputDecoration(labelText: "Tahun"),
+            ),
+            TextField(
+              controller: controller.blokC,
+              decoration: const InputDecoration(labelText: "Blok"),
+            ),
+            TextField(
+              controller: controller.ambalanC,
+              decoration: const InputDecoration(labelText: "Ambalan"),
+            ),
+            TextField(
+              controller: controller.boxC,
+              decoration: const InputDecoration(labelText: "Box"),
+            ),
+
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller.descC,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Deskripsi Isi Dokumen",
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
+        ElevatedButton(
+          onPressed: () async {
+            await controller.updateDukumenKantor(id);
+            controller.clearForm();
+            Get.back();
+          },
+          child: const Text("Update"),
+        ),
+      ],
     );
   }
 }
