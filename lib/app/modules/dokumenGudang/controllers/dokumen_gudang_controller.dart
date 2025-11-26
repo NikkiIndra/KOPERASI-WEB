@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:koperasi/app/modules/Document/utils/AddDocument.dart';
+import 'package:koperasi/app/modules/dokumenGudang/utils/AddDocument.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:html' as html;
 
-class DocumentController extends GetxController {
+import '../../../helper/toas.dart';
+
+class DokumenGudangController extends GetxController {
   final search = ''.obs;
 
   final titleC = TextEditingController();
   final yearC = TextEditingController(text: "2025");
-  final rakC = TextEditingController();
-  final boxC = TextEditingController();
-  final descC = TextEditingController();
+  final bantexC = TextEditingController();
   final isFormValid = false.obs;
 
   final docs = <Map<String, dynamic>>[].obs;
@@ -30,24 +30,19 @@ class DocumentController extends GetxController {
   Future<void> saveDocument({
     required String title,
     required String year,
-    required String rak,
-    required String box,
-    required String desc,
+    required String bantex,
   }) async {
     try {
-      await FirebaseFirestore.instance.collection("dokumen").add({
+      await FirebaseFirestore.instance.collection("dokumenGudang").add({
         "name": title,
         "year": year,
-        "rak": rak,
-        "box": box,
-        "lokasi": "$rak / $box",
-        "desc": desc,
+        "bantex": bantex,
         "update": DateTime.now().toIso8601String(),
       });
 
-      Get.snackbar("Sukses", "Dokumen berhasil disimpan");
+      // AppToast.show("Dokumen berhasil disimpan");
     } catch (e) {
-      Get.snackbar("Error", "Gagal menyimpan dokumen");
+      // AppToast.show("Gagal menyimpan dokumen");
     }
   }
 
@@ -55,7 +50,9 @@ class DocumentController extends GetxController {
   // LOAD FIRESTORE REALTIME
   // =====================================================
   void loadDocs() async {
-    FirebaseFirestore.instance.collection("dokumen").snapshots().listen((snap) {
+    FirebaseFirestore.instance.collection("dokumenGudang").snapshots().listen((
+      snap,
+    ) {
       docs.value = snap.docs.map((d) {
         final data = Map<String, dynamic>.from(d.data());
         data["id"] = d.id;
@@ -88,7 +85,7 @@ class DocumentController extends GetxController {
   // BUKA DIALOG
   // =====================================================
   void openAddDocumentDialog() {
-    Get.dialog(AddDocumentDialog(), barrierDismissible: false);
+    Get.dialog(AddDocumentDialogGudang(), barrierDismissible: false);
   }
 
   // =====================================================
@@ -97,9 +94,7 @@ class DocumentController extends GetxController {
   Future<void> generatePDF({
     required String title,
     required String year,
-    required String rak,
-    required String box,
-    required String desc,
+    required String bantex,
   }) async {
     final pdf = pw.Document();
 
@@ -121,10 +116,9 @@ class DocumentController extends GetxController {
                 pw.SizedBox(height: 20),
                 pw.Text("Nama Dokumen : $title"),
                 pw.Text("Tahun        : $year"),
-                pw.Text("Lokasi       : Rak $rak - Box $box"),
                 pw.SizedBox(height: 20),
-                pw.Text("Deskripsi:"),
-                pw.Text(desc),
+                pw.Text("Bantex:"),
+                pw.Text(bantex),
               ],
             ),
           );
@@ -150,31 +144,21 @@ class DocumentController extends GetxController {
   Future<void> deleteDocument(Map data) async {
     try {
       await FirebaseFirestore.instance
-          .collection("dokumen")
+          .collection("dokumenGudang")
           .doc(data["id"])
           .delete();
 
-      Get.snackbar("Berhasil", "Dokumen dihapus");
+      // AppToast.show("Dokumen berhasil dihapus");
     } catch (e) {
-      Get.snackbar("Error", "Gagal menghapus dokumen");
+      // AppToast.show("Gagal menghapus dokumen");
     }
   }
 
   // =====================================================
   // Validasi Form
   // =====================================================
-  void validateForm(
-    String title,
-    String year,
-    String rak,
-    String box,
-    String desc,
-  ) {
+  void validateForm(String title, String year, String bantex) {
     isFormValid.value =
-        title.isNotEmpty &&
-        year.isNotEmpty &&
-        rak.isNotEmpty &&
-        box.isNotEmpty &&
-        desc.isNotEmpty;
+        title.isNotEmpty && year.isNotEmpty && bantex.isNotEmpty;
   }
 }

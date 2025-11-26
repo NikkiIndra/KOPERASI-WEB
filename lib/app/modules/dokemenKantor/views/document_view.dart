@@ -85,7 +85,9 @@ class DocumentView extends GetView<DocumentController> {
                   columns: const [
                     DataColumn(label: Text("Nama Dokumen")),
                     DataColumn(label: Text("Update")),
-                    DataColumn(label: Text("Lokasi")),
+                    DataColumn(label: Text("Blok")),
+                    DataColumn(label: Text("Ambalan")),
+                    DataColumn(label: Text("Box")),
                     DataColumn(label: Text("Aksi")),
                   ],
                   rows: controller.filteredDocs.map((data) {
@@ -107,7 +109,13 @@ class DocumentView extends GetView<DocumentController> {
 
                         // LOKASI
                         DataCell(
-                          Text("rak-${data['rak']} --- box-${data['box']}"),
+                          Text("${data['blok']}"),
+                        ),
+                        DataCell(
+                          Text("${data['ambalan']}"),
+                        ),
+                        DataCell(
+                          Text("${data['box']}"),
                         ),
 
                         // AKSI ICONS
@@ -120,7 +128,8 @@ class DocumentView extends GetView<DocumentController> {
                                   controller.generatePDF(
                                     title: data['name'],
                                     year: data['year'],
-                                    rak: data['rak'],
+                                    blok: data['blok'],
+                                    ambalan: data['ambalan'],
                                     box: data['box'],
                                     desc: data['desc'],
                                   );

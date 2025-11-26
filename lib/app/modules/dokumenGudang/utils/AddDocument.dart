@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/document_controller.dart';
+import 'package:koperasi/app/modules/dokumenGudang/controllers/dokumen_gudang_controller.dart';
 
-class AddDocumentDialog extends StatelessWidget {
-  AddDocumentDialog({super.key});
-  final controller = Get.find<DocumentController>();
+class AddDocumentDialogGudang extends StatelessWidget {
+  AddDocumentDialogGudang({super.key});
+  final controller = Get.find<DokumenGudangController>();
   final titleC = TextEditingController();
   final yearC = TextEditingController(text: "2025");
-  final rakC = TextEditingController();
-  final boxC = TextEditingController();
-  final descC = TextEditingController();
+  final bantexC = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +24,7 @@ class AddDocumentDialog extends StatelessWidget {
                 onChanged: (_) => controller.validateForm(
                   titleC.text,
                   yearC.text,
-                  rakC.text,
-                  boxC.text,
-                  descC.text,
+                  bantexC.text,
                 ),
               ),
               TextField(
@@ -37,47 +33,13 @@ class AddDocumentDialog extends StatelessWidget {
                 onChanged: (_) => controller.validateForm(
                   titleC.text,
                   yearC.text,
-                  rakC.text,
-                  boxC.text,
-                  descC.text,
+                  bantexC.text,
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: rakC,
-                      decoration: const InputDecoration(labelText: "No Rak"),
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => controller.validateForm(
-                        titleC.text,
-                        yearC.text,
-                        rakC.text,
-                        boxC.text,
-                        descC.text,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: boxC,
-                      decoration: const InputDecoration(labelText: "No Box"),
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => controller.validateForm(
-                        titleC.text,
-                        yearC.text,
-                        rakC.text,
-                        boxC.text,
-                        descC.text,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+
               const SizedBox(height: 12),
               TextField(
-                controller: descC,
+                controller: bantexC,
                 maxLines: 4,
                 decoration: const InputDecoration(
                   labelText: "Deskripsi Isi Dokumen",
@@ -86,9 +48,7 @@ class AddDocumentDialog extends StatelessWidget {
                 onChanged: (_) => controller.validateForm(
                   titleC.text,
                   yearC.text,
-                  rakC.text,
-                  boxC.text,
-                  descC.text,
+                  bantexC.text,
                 ),
               ),
 
@@ -114,21 +74,23 @@ class AddDocumentDialog extends StatelessWidget {
       ),
 
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
+        TextButton(
+          onPressed: () => Navigator.of(Get.context!).pop(),
+
+          child: const Text("Batal"),
+        ),
         Obx(
           () => ElevatedButton(
             onPressed: controller.isFormValid.value
                 ? () async {
-                    final lokasi = "${rakC.text} / ${boxC.text}";
                     await controller.saveDocument(
                       title: titleC.text,
                       year: yearC.text,
-                      rak: rakC.text,
-                      box: boxC.text,
-                      desc: descC.text,
+                      bantex: bantexC.text,
                     );
 
-                    Get.back();
+                    Navigator.of(Get.context!).pop();
+
                   }
                 : null, // <-- disabled
             child: const Text("Simpan"),

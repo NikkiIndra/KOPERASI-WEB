@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:koperasi/app/modules/dokumenGudang/views/dokumen_gudang_view.dart';
 import 'package:koperasi/app/modules/nasabah/views/nasabah_view.dart';
-import 'package:koperasi/app/modules/Document/views/document_view.dart';
+import 'package:koperasi/app/modules/dokemenKantor/views/document_view.dart';
 import 'package:koperasi/app/modules/navigation/controllers/navigation_controller.dart';
 
 class NavigationView extends GetView<NavigationController> {
@@ -24,7 +25,7 @@ class NavigationView extends GetView<NavigationController> {
                   child: Obx(() {
                     return IndexedStack(
                       index: controller.currentIndex.value,
-                      children: const [DocumentView(), NasabahView()],
+                      children: const [DocumentView(), DokumenGudangView()],
                     );
                   }),
                 ),
@@ -107,7 +108,13 @@ class NavigationView extends GetView<NavigationController> {
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(12),
                               child: InkWell(
-                                onTap: () => controller.changePage(index),
+                                onTap: () {
+                                  if (index == 2) {
+                                    controller.confirmLogout();
+                                  } else {
+                                    controller.changePage(index);
+                                  }
+                                },
                                 borderRadius: BorderRadius.circular(12),
                                 child: Tooltip(
                                   message: controller
@@ -164,9 +171,11 @@ class NavigationView extends GetView<NavigationController> {
   IconData _getIconForIndex(int index) {
     switch (index) {
       case 0: // Dashboard
-        return CupertinoIcons.collections_solid;
+        return CupertinoIcons.rectangle_stack_person_crop;
       case 1: // Create News
-        return CupertinoIcons.person_3_fill;
+        return CupertinoIcons.cube_box;
+      case 2: // Create News
+        return CupertinoIcons.square_arrow_left;
       default:
         return CupertinoIcons.circle;
     }
