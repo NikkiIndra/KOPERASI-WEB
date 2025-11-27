@@ -53,12 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBoB18D0LeH0N4DjelJhleC_34ifhQbbXo',
-    appId: '1:338843307020:web:bbd0ca368084e3c1f3f229',
-    messagingSenderId: '338843307020',
-    projectId: 'koperasi-e2cad',
-    authDomain: 'koperasi-e2cad.firebaseapp.com',
-    storageBucket: 'koperasi-e2cad.firebasestorage.app',
+    apiKey: 'AIzaSyBPAQDfSM2_1uDljwVDQte109xjnYhkQAI',
+    appId: '1:1032858635636:web:1fa614390f1ad41ebf7021',
+    messagingSenderId: '1032858635636',
+    projectId: 'koperasi-95db1',
+    authDomain: 'koperasi-95db1.firebaseapp.com',
+    storageBucket: 'koperasi-95db1.firebasestorage.app',
   );
-
 }

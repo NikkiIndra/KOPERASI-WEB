@@ -25,10 +25,7 @@ class _SplashViewState extends State<SplashView> {
       body: Center(
         child: Text(
           "Koperasi Web",
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
         ),
       ),
     );

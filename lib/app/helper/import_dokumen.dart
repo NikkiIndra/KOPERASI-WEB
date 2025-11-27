@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import '../modules/dokemenKantor/controllers/document_controller.dart';
 
 class ImportDocumentDialog extends StatefulWidget {
+  const ImportDocumentDialog({super.key});
+
   @override
   _ImportDocumentDialogState createState() => _ImportDocumentDialogState();
 }

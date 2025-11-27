@@ -3,26 +3,12 @@
     "platforms": {
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "koperasi-e2cad",
+          "projectId": "koperasi-95db1",
           "configurations": {
-            "web": "1:338843307020:web:bbd0ca368084e3c1f3f229"
+            "web": "1:1032858635636:web:1fa614390f1ad41ebf7021"
           }
         }
       }
     }
-  },
-  "hosting": {
-    "public": "build/web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
   }
 }

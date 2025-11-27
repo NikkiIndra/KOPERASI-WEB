@@ -136,7 +136,8 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
                                       editDokumenGudangDialog(data['id']),
                                     );
                                   } else {
-                                    Get.snackbar('Error', 'Data tidak lengkap');
+                                    print(
+                                        "Data dokumen tidak lengkap untuk diedit.");
                                   }
                                 },
                                 icon: Tooltip(

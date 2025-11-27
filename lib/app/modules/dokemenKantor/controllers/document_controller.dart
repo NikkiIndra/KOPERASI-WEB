@@ -102,10 +102,9 @@ class DocumentController extends GetxController {
       });
 
       print('Firestore document saved');
-      Get.snackbar('Sukses', 'Dokumen berhasil diimport');
     } catch (e) {
       print('Import error: $e');
-      Get.snackbar('Error', 'Gagal mengimport dokumen: $e');
+      print('Gagal mengimport dokumen: $e');
     }
   }
 
@@ -139,7 +138,7 @@ class DocumentController extends GetxController {
         );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mendownload: $e');
+      print( 'Gagal mendownload: $e');
     }
   }
 
@@ -326,9 +325,8 @@ class DocumentController extends GetxController {
           .doc(data["id"])
           .delete();
 
-      Get.snackbar('Sukses', 'Dokumen berhasil dihapus');
     } catch (e) {
-      Get.snackbar('Error', 'Gagal menghapus dokumen: $e');
+      print('Gagal menghapus dokumen: $e');
     }
   }
 

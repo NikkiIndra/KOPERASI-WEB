@@ -44,34 +44,20 @@ class LoginController extends GetxController {
 
     LoadingHelper.show(message: "Checking...");
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    final username = emailController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    const fixedUsername = "koperasi";
-    const fixedPassword = "koperasi123";
-    const mappedEmail = "koperasi@kita.com";
-
-    if (username != fixedUsername || password != fixedPassword) {
-      LoadingHelper.hide();
-      AppToast.show("Username atau password salah");
-      return;
-    }
-
     try {
-      await auth.signInWithEmailAndPassword(
-        email: mappedEmail,
-        password: fixedPassword,
-      );
+      await auth.signInWithEmailAndPassword(email: email, password: password);
 
       LoadingHelper.hide();
-      Get.toNamed(
-        '/navigation',
-      ); // Gunakan offAll untuk menghapus halaman login dari stack
+      Get.offAllNamed('/navigation');
     } catch (e) {
       LoadingHelper.hide();
-      AppToast.show("Login gagal");
+      print("Login failed: $e");
+      // AppToast.show("Login gagal: ${e.toString()}");
     }
   }
 }
