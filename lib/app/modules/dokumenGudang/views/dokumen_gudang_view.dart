@@ -1,10 +1,10 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 
 import '../../../helper/format_tanggal.dart';
+import '../../../helper/google_drive_service.dart'; // IMPORT SERVICE
 import '../controllers/dokumen_gudang_controller.dart';
 
 class DokumenGudangView extends GetView<DokumenGudangController> {
@@ -12,7 +12,6 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
 
   @override
   Widget build(BuildContext context) {
-    // controller.search.value = "";
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -49,7 +48,74 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
                   ),
                 ),
 
+                // TOMBOL CONNECT GOOGLE DRIVE
+                Obx(
+                  () => IconButton(
+                    onPressed: () {
+                      if (controller.isDriveConnected.value) {
+                        GoogleDriveService.logout();
+                        controller.isDriveConnected.value = false;
+                      } else {
+                        controller.connectToDrive();
+                      }
+                    },
+                    icon: Icon(
+                      controller.isDriveConnected.value
+                          ? Icons.cloud_done
+                          : Icons.cloud_off,
+                      color: controller.isDriveConnected.value
+                          ? Colors.green
+                          : Colors.grey,
+                    ),
+                    tooltip: controller.isDriveConnected.value
+                        ? 'Terputus dari Google Drive'
+                        : 'Sambung ke Google Drive',
+                  ),
+                ),
+
                 const SizedBox(width: 12),
+
+                // TOMBOL IMPORT (HANYA AKTIF JIKA TERHUBUNG DRIVE)
+                Obx(() {
+                  final isDriveConnected = controller.isDriveConnected.value;
+
+                  return Tooltip(
+                    message: isDriveConnected
+                        ? "Import dokumen ke Google Drive"
+                        : "Login Google Drive diperlukan. Klik icon awan di samping kiri untuk login.",
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDriveConnected
+                            ? Colors.blue.shade700
+                            : Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: isDriveConnected
+                          ? () => controller.openImportDialog()
+                          : null,
+                      icon: Icon(
+                        Icons.upload_file,
+                        color: isDriveConnected
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.7),
+                      ),
+                      label: Text(
+                        "Import Dokumen",
+                        style: TextStyle(
+                          color: isDriveConnected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+
+                const SizedBox(width: 12),
+
+                // TOMBOL TAMBAH DOKUMEN BIASA
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple.shade700,
@@ -80,19 +146,18 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
                   columnSpacing: 24,
                   horizontalMargin: 12,
                   headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
-                  dataRowColor: WidgetStateProperty.all(
-                    Colors.purple.shade50, // ungu pastel
-                  ),
+                  dataRowColor: WidgetStateProperty.all(Colors.purple.shade50),
                   columns: const [
                     DataColumn(label: Text("Nama Dokumen")),
                     DataColumn(label: Text("Update")),
-                    DataColumn(label: Text("Bantex")),
+                    DataColumn(label: Text("Batext")),
+                    DataColumn(label: Text("Tipe")),
                     DataColumn(label: Text("Aksi")),
                   ],
                   rows: controller.filteredDocs.map((data) {
+                    final docType = data['type'] ?? 'manual';
                     return DataRow(
                       cells: [
-                        // NAMA DOKUMEN (ellipsis + tooltip)
                         DataCell(
                           Tooltip(
                             message: data['name'],
@@ -102,84 +167,81 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
                             ),
                           ),
                         ),
-
-                        // UPDATE
                         DataCell(Text(formatTanggal(data['update']))),
-
-                        // LOKASI
                         DataCell(
                           Tooltip(
-                            message: data['name'],
+                            message: data['bantex'],
                             child: Text(
-                              data['bantex'],
+                              data['bantex'] ?? '',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
-
-                        // AKSI ICONS
+                        // TIPE DOKUMEN
+                        DataCell(
+                          Chip(
+                            label: Text(
+                              docType == 'drive' ? 'Google Drive' : 'Manual',
+                              style: TextStyle(
+                                color: docType == 'drive'
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontSize: 11,
+                              ),
+                            ),
+                            backgroundColor: docType == 'drive'
+                                ? Colors.blue
+                                : Colors.grey[300],
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                          ),
+                        ),
                         DataCell(
                           Row(
                             children: [
-                              // EDIT - Gunakan IconButton
+                              // EDIT
                               IconButton(
                                 onPressed: () {
-                                  // Pastikan data tidak null sebelum mengakses
-                                  if (data['name'] != null &&
-                                      data['year'] != null &&
-                                      data['bantex'] != null) {
-                                    controller.titleC.text = data['name'] ?? '';
-                                    controller.yearC.text = data['year'] ?? '';
-                                    controller.bantexC.text =
-                                        data['bantex'] ?? '';
-                                    Get.dialog(
-                                      editDokumenGudangDialog(data['id']),
-                                    );
-                                  } else {
-                                    print(
-                                        "Data dokumen tidak lengkap untuk diedit.");
-                                  }
+                                  controller.titleC.text = data['name'] ?? '';
+                                  controller.yearC.text = data['year'] ?? '';
+                                  controller.bantexC.text =
+                                      data['bantex'] ?? '';
+                                  Get.dialog(
+                                    editDokumenGudangDialog(data['id'], data),
+                                  );
                                 },
-                                icon: Tooltip(
+                                icon: const Tooltip(
                                   message: "Edit Dokumen",
-                                  child: const Icon(
-                                    CupertinoIcons.pencil,
-                                    size: 20,
-                                  ),
+                                  child: Icon(CupertinoIcons.pencil, size: 20),
                                 ),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
-
                               const SizedBox(width: 14),
 
-                              // DOWNLOAD - Juga gunakan IconButton
+                              // DOWNLOAD
                               IconButton(
                                 onPressed: () {
-                                  if (data['name'] != null &&
-                                      data['year'] != null &&
-                                      data['bantex'] != null) {
-                                    controller.generatePDF(
-                                      title: data['name']!,
-                                      year: data['year']!,
-                                      bantex: data['bantex']!,
-                                    );
-                                  }
+                                  controller.downloadDocument(data);
                                 },
                                 icon: Tooltip(
-                                  message: "Download Dokumen",
-                                  child: const Icon(
-                                    CupertinoIcons.arrow_down_doc_fill,
+                                  message: docType == 'drive'
+                                      ? "Download dari Google Drive"
+                                      : "Generate PDF",
+                                  child: Icon(
+                                    docType == 'drive'
+                                        ? CupertinoIcons.cloud_download_fill
+                                        : CupertinoIcons.arrow_down_doc_fill,
                                     size: 20,
+                                    color: docType == 'drive'
+                                        ? Colors.blue
+                                        : null,
                                   ),
                                 ),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
-
                               const SizedBox(width: 14),
 
-                              // DELETE - Gunakan IconButton
+                              // DELETE
                               IconButton(
                                 onPressed: () {
                                   Get.defaultDialog(
@@ -194,16 +256,14 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
                                     },
                                   );
                                 },
-                                icon: Tooltip(
+                                icon: const Tooltip(
                                   message: "Hapus Dokumen",
-                                  child: const Icon(
+                                  child: Icon(
                                     CupertinoIcons.delete,
                                     size: 20,
                                     color: Colors.red,
                                   ),
                                 ),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),
@@ -220,7 +280,7 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
     );
   }
 
-  Widget editDokumenGudangDialog(String id) {
+  Widget editDokumenGudangDialog(String id, Map<String, dynamic> data) {
     return AlertDialog(
       title: const Text("Edit Dokumen Gudang"),
       content: SizedBox(
@@ -236,16 +296,43 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
               controller: controller.yearC,
               decoration: const InputDecoration(labelText: "Tahun"),
             ),
-
             const SizedBox(height: 12),
             TextField(
               controller: controller.bantexC,
               maxLines: 4,
               decoration: const InputDecoration(
-                labelText: "Deskripsi Isi Dokumen",
+                labelText: "Bantex",
                 alignLabelWithHint: true,
               ),
             ),
+
+            // INFO JIKA DOKUMEN ADA DI DRIVE
+            if (data['type'] == 'drive') ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.cloud_done, color: Colors.blue[700]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Dokumen ini tersimpan di Google Drive",
+                        style: TextStyle(
+                          color: Colors.blue[800],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -253,7 +340,7 @@ class DokumenGudangView extends GetView<DokumenGudangController> {
         TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
         ElevatedButton(
           onPressed: () async {
-            await controller.updateDokumenGudang(id);
+            await controller.updateDokumenGudang(id, data);
             controller.clearForm();
             Get.back();
           },

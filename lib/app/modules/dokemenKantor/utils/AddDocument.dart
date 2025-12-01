@@ -127,7 +127,6 @@ class AddDocumentDialogKantor extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(Get.context!).pop(),
-
           child: const Text("Batal"),
         ),
         Obx(
@@ -142,7 +141,6 @@ class AddDocumentDialogKantor extends StatelessWidget {
                       box: boxC.text,
                       desc: descC.text,
                     );
-
                     Get.back();
                   }
                 : null, // <-- disabled

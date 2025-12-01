@@ -42,7 +42,7 @@ class AddDocumentDialogGudang extends StatelessWidget {
                 controller: bantexC,
                 maxLines: 4,
                 decoration: const InputDecoration(
-                  labelText: "Deskripsi Isi Dokumen",
+                  labelText: "Bantex Dokumen",
                   alignLabelWithHint: true,
                 ),
                 onChanged: (_) => controller.validateForm(

@@ -20,6 +20,10 @@
     <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
     <meta name="description" content="A new Flutter project." />
 
+    <meta
+      name="google-signin-client_id"
+      content="280841999366-vl2upgigeovhclmsv00ccce9cu4ch5k5.apps.googleusercontent.com"
+    />
     <!-- iOS meta tags & icons -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -37,6 +41,34 @@
     <link rel="manifest" href="manifest.json" />
   </head>
   <body>
+        <!-- Google Identity Services (Wajib) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Firebase config ONLY (tanpa initializeApp!) -->
+    <script>
+      window.firebaseConfig = {
+        apiKey: "AIzaSyBPAQDfSM2_1uDljwVDQte109xjnYhkQAI",
+        authDomain: "koperasi-95db1.firebaseapp.com",
+        projectId: "koperasi-95db1",
+        storageBucket: "koperasi-95db1.firebasestorage.app",
+        messagingSenderId: "1032858635636",
+        appId: "1:1032858635636:web:1fa614390f1ad41ebf7021",
+      };
+    </script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function googleDriveLogin(callbackName) {
+        google.accounts.oauth2
+          .initTokenClient({
+            client_id:
+              "280841999366-vl2upgigeovhclmsv00ccce9cu4ch5k5.apps.googleusercontent.com",
+            scope: "https://www.googleapis.com/auth/drive.file",
+            callback: (tokenResponse) => {
+              window[callbackName](tokenResponse.access_token);
+            },
+          })
+          .requestAccessToken();
+      }
+    </script>
     <script src="flutter_bootstrap.js" async></script>
     <!-- Firebase SDK compat untuk Flutter Web -->
   </script>

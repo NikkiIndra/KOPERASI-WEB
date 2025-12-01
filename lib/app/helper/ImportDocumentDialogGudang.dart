@@ -1,73 +1,44 @@
-// import_document_dialog.dart
+// lib/app/modules/dokumenGudang/utils/ImportDocumentDialogGudang.dart
 import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../modules/dokemenKantor/controllers/document_controller.dart';
+import '../modules/dokumenGudang/controllers/dokumen_gudang_controller.dart';
 
-class ImportDocumentDialog extends StatefulWidget {
-  const ImportDocumentDialog({super.key});
+class ImportDocumentDialogGudang extends StatefulWidget {
+  const ImportDocumentDialogGudang({super.key});
 
   @override
-  _ImportDocumentDialogState createState() => _ImportDocumentDialogState();
+  _ImportDocumentDialogGudangState createState() =>
+      _ImportDocumentDialogGudangState();
 }
 
-class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
-  final DocumentController controller = Get.find();
+class _ImportDocumentDialogGudangState
+    extends State<ImportDocumentDialogGudang> {
+  final DokumenGudangController controller = Get.find();
   html.File? _selectedFile;
   bool _isLoading = false;
 
-  void _pickFile() {
-    final input = html.FileUploadInputElement()
-      ..accept = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
-    input.click();
+  // void _pickFile() {
+  //   final input = html.FileUploadInputElement()
+  //     ..accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+  //   input.click();
 
-    input.onChange.listen((e) {
-      final files = input.files;
-      if (files != null && files.isNotEmpty) {
-        final file = files[0];
-        final fileName = file.name;
-
-        // Validasi ekstensi double
-        if (_hasDoubleExtension(fileName)) {
-          print('File tidak boleh memiliki ekstensi ganda.');
-        }
-
-        setState(() {
-          _selectedFile = file;
-        });
-      }
-    });
-  }
-
-  bool _hasDoubleExtension(String fileName) {
-    final parts = fileName.split('.');
-    if (parts.length < 3) return false;
-
-    const extensions = {
-      'pdf',
-      'doc',
-      'docx',
-      'xls',
-      'xlsx',
-      'jpg',
-      'jpeg',
-      'png',
-      'txt',
-    };
-    final last = parts.last.toLowerCase();
-    final secondLast = parts[parts.length - 2].toLowerCase();
-
-    return extensions.contains(last) && extensions.contains(secondLast);
-  }
+  //   input.onChange.listen((e) {
+  //     final files = input.files;
+  //     if (files != null && files.isNotEmpty) {
+  //       setState(() {
+  //         _selectedFile = files[0];
+  //       });
+  //     }
+  //   });
+  // }
 
   bool _isFormValid() {
     return controller.titleC.text.isNotEmpty &&
         controller.yearC.text.isNotEmpty &&
-        controller.blokC.text.isNotEmpty &&
-        controller.ambalanC.text.isNotEmpty &&
-        controller.boxC.text.isNotEmpty &&
+        controller.bantexC.text.isNotEmpty &&
         _selectedFile != null;
   }
 
@@ -79,20 +50,16 @@ class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
     });
 
     try {
-      // Langsung import ke Google Drive (tidak ada pilihan Firebase)
+      // Import ke Google Drive
       await controller.importDocumentToDrive(
         title: controller.titleC.text,
         year: controller.yearC.text,
-        blok: controller.blokC.text,
-        ambalan: controller.ambalanC.text,
-        box: controller.boxC.text,
+        bantex: controller.bantexC.text,
         file: _selectedFile!,
       );
 
       controller.clearForm();
       Get.back();
-
-      print('Dokumen berhasil diimport ke Drive');
     } catch (e) {
       print('Gagal mengimport dokumen ke Drive: $e');
     } finally {
@@ -154,18 +121,9 @@ class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[400],
-                    ),
                     onPressed: _pickFile,
                     icon: const Icon(Icons.attach_file),
-                    label: Tooltip(
-                      message: "Pilih file dokumen(pdf, doc, jpg, png)",
-                      child: Text(
-                        _selectedFile?.name ?? "Pilih File",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    label: Text(_selectedFile?.name ?? "Pilih File"),
                   ),
                   if (_selectedFile != null)
                     Padding(
@@ -203,27 +161,10 @@ class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: controller.blokC,
+                controller: controller.bantexC,
+                maxLines: 4,
                 decoration: const InputDecoration(
-                  labelText: "Blok*",
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller.ambalanC,
-                decoration: const InputDecoration(
-                  labelText: "Ambalan*",
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller.boxC,
-                decoration: const InputDecoration(
-                  labelText: "Box*",
+                  labelText: "Deskripsi*",
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -250,10 +191,8 @@ class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: _isFormValid()
-                ? Colors
-                      .green // Hijau saat form valid
-                : Colors.grey,
+            backgroundColor: _isFormValid() ? Colors.green : Colors.grey,
+            foregroundColor: Colors.white,
           ),
           onPressed: _isLoading
               ? null
@@ -262,11 +201,50 @@ class _ImportDocumentDialogState extends State<ImportDocumentDialog> {
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: Colors.white),
                 )
               : const Text("Import ke Drive"),
         ),
       ],
     );
   }
+
+  // Di ImportDocumentDialogGudang.dart - tambahkan validasi
+void _pickFile() {
+  final input = html.FileUploadInputElement()
+    ..accept = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
+  input.click();
+
+  input.onChange.listen((e) {
+    final files = input.files;
+    if (files != null && files.isNotEmpty) {
+      final file = files[0];
+      final fileName = file.name;
+      
+      // Validasi ekstensi double
+      if (_hasDoubleExtension(fileName)) {
+        Get.snackbar(
+          'Peringatan',
+          'File memiliki ekstensi ganda. Contoh: "file.docx.pdf"',
+          backgroundColor: Colors.orange,
+        );
+      }
+      
+      setState(() {
+        _selectedFile = file;
+      });
+    }
+  });
+}
+
+bool _hasDoubleExtension(String fileName) {
+  final parts = fileName.split('.');
+  if (parts.length < 3) return false;
+  
+  const extensions = {'pdf','doc','docx','xls','xlsx','jpg','jpeg','png','txt'};
+  final last = parts.last.toLowerCase();
+  final secondLast = parts[parts.length - 2].toLowerCase();
+  
+  return extensions.contains(last) && extensions.contains(secondLast);
+}
 }

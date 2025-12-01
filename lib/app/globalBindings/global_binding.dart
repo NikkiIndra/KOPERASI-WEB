@@ -5,6 +5,7 @@ import 'package:koperasi/app/modules/login/controllers/login_controller.dart';
 import 'package:koperasi/app/modules/navigation/controllers/navigation_controller.dart';
 
 import '../modules/nasabah/controllers/nasabah_controller.dart';
+import '../services/drive_auth_service.dart';
 
 class GlobalBinding extends Bindings {
   @override
@@ -20,5 +21,6 @@ class GlobalBinding extends Bindings {
       () => NavigationController(),
       fenix: true,
     );
+    Get.lazyPut(() => DriveAuthService(), fenix: true);
   }
 }
